@@ -11,8 +11,32 @@ impl epi::App for App {
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
-        egui::Window::new("Test").show(ctx, |ui| {
-            ui.label("Hello, world!");
+        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
+            egui::menu::bar(ui, |ui| {
+                ui.menu_button("File", |ui| {
+                    if ui.button("Quit").clicked() {
+                        frame.quit()
+                    }
+                });
+            });
+        });
+
+        egui::SidePanel::right("right_panel")
+            .default_width(20.0)
+            .show(ctx, |ui| {
+                let mut settings_button = ui.button("Settings");
+                if settings_button.clicked() {
+                    println!("Opening settings.")
+                }
+            });
+
+        let mut songs = vec!["We Lift Together", "September"];
+
+        egui::CentralPanel::default().show(ctx, |ui| {
+            let label = ui.add(egui::Label::new(songs[0]).sense(egui::Sense::click()));
+            if label.clicked() {
+                println!("Clicked!");
+            }
         });
     }
 }
@@ -22,6 +46,7 @@ fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
         if ui.button("-").clicked() {
             *counter -= 1;
         }
+
         ui.label(counter.to_string());
         if ui.button("+").clicked() {
             *counter += 1;
