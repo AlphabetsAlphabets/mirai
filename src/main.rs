@@ -1,23 +1,39 @@
-use dirs::config_dir;
 use eframe::{egui, epi};
 use std::process::Command;
 
-#[derive(Default)]
-struct App;
+struct App {
+    songs: Vec<String>,
+}
+
+impl Default for App {
+    fn default() -> Self {
+        let songs = App::scan_songs();
+        App { songs }
+    }
+}
 
 impl App {
-    fn scan_songs(&self) {
-        let home_dir = std::env::var("HOME").unwrap();
-        let home_dir = home_dir.as_str();
+    fn scan_songs() -> Vec<String> {
+        let home_dir = dirs::home_dir().unwrap();
+        let home_dir = home_dir.to_str().unwrap();
 
         let output = Command::new("fd")
             .args(["-t", "f", ".mp3", home_dir])
             .output()
             .expect("You either do not have `fd` installed, or are on Windows.");
 
-        for value in output.stdout {
-            println!("{}", value as char);
+        let mut songs: Vec<String> = vec![];
+        let mut aggregate = String::new();
+        for c in output.stdout {
+            if c as char == '\n' {
+                songs.push(aggregate.clone().trim().to_string());
+                aggregate.clear();
+            }
+
+            aggregate.push(c as char);
         }
+
+        songs
     }
 }
 
@@ -35,12 +51,12 @@ impl epi::App for App {
                         frame.quit()
                     }
                 });
-
                 ui.menu_button("Search", |ui| {
                     let scan_btn = ui.button("Scan for songs");
                     if scan_btn.clicked() {
                         println!("Scanning.");
-                        self.scan_songs();
+                        let songs = App::scan_songs();
+                        self.songs = songs;
                     } else {
                         scan_btn.on_hover_ui(|ui| {
                             ui.label("Scan for songs throughout the entire computer.");
@@ -79,7 +95,11 @@ impl epi::App for App {
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::vertical()
                 .auto_shrink([false; 2])
-                .show(ui, |ui| {});
+                .show(ui, |ui| {
+                    for song in &self.songs {
+                        ui.label(song);
+                    }
+                });
         });
     }
 }
