@@ -7,7 +7,7 @@ struct App;
 
 impl epi::App for App {
     fn name(&self) -> &str {
-        "app"
+        "Mirai"
     }
 
     fn update(&mut self, ctx: &egui::Context, frame: &epi::Frame) {
@@ -18,19 +18,33 @@ impl epi::App for App {
                         frame.quit()
                     }
                 });
+
+                ui.menu_button("Search", |ui| {
+                    if ui.button("Scan for songs").clicked() {
+                        println!("Scanning.");
+                    }
+                });
             });
         });
 
-        egui::SidePanel::right("right_panel")
-            .default_width(20.0)
-            .show(ctx, |ui| {
-                let mut settings_button = ui.button("Settings");
-                if settings_button.clicked() {
-                    println!("Opening settings.")
-                }
-            });
-
         let mut songs = vec!["We Lift Together", "September"];
+
+        egui::TopBottomPanel::bottom("bottom_panel")
+            .min_height(100.0)
+            .show(ctx, |ui| {
+                ui.columns(3, |columns| {
+                    // columns is just an vec of Ui
+                    let previous_btn = egui::RichText::new("Previous").size(20.0);
+                    let previous_btn = egui::Button::new(previous_btn).small();
+                    columns[0].add(previous_btn);
+
+                    let pause_play_btn = egui::RichText::new("Play").size(20.0);
+                    columns[1].button(pause_play_btn);
+
+                    let next_btn = egui::RichText::new("Next").size(20.0);
+                    columns[2].button(next_btn);
+                });
+            });
 
         egui::CentralPanel::default().show(ctx, |ui| {
             let label = ui.add(egui::Label::new(songs[0]).sense(egui::Sense::click()));
@@ -39,19 +53,6 @@ impl epi::App for App {
             }
         });
     }
-}
-
-fn ui_counter(ui: &mut egui::Ui, counter: &mut i32) {
-    ui.horizontal(|ui| {
-        if ui.button("-").clicked() {
-            *counter -= 1;
-        }
-
-        ui.label(counter.to_string());
-        if ui.button("+").clicked() {
-            *counter += 1;
-        }
-    });
 }
 
 fn main() {
