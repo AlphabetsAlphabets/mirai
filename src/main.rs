@@ -1,14 +1,24 @@
 use eframe::{egui, epi};
+use egui::{Button, Id, Response};
+use std::collections::HashMap;
 use std::process::Command;
 
 struct App {
-    songs: Vec<String>,
+    songs_titles: Vec<String>,
+    song_buttons: Vec<Response>,
+    song_ids: HashMap<Id, String>,
 }
 
 impl Default for App {
     fn default() -> Self {
-        let songs = App::scan_songs();
-        App { songs }
+        let songs_titles = App::scan_songs();
+        let responses = vec![];
+        let song_ids: HashMap<_, _> = HashMap::default();
+        App {
+            songs_titles,
+            song_buttons: responses,
+            song_ids,
+        }
     }
 }
 
@@ -52,13 +62,12 @@ impl epi::App for App {
                     }
                 });
 
-                // hi
                 ui.menu_button("Search", |ui| {
                     let scan_btn = ui.button("Scan for songs");
                     if scan_btn.clicked() {
                         println!("Scanning.");
                         let songs = App::scan_songs();
-                        self.songs = songs;
+                        self.songs_titles = songs;
                     } else {
                         scan_btn.on_hover_ui(|ui| {
                             ui.label("Scan for songs throughout the entire computer.");
@@ -77,6 +86,7 @@ impl epi::App for App {
             });
         });
 
+        // Playback control
         egui::TopBottomPanel::bottom("bottom_panel")
             .min_height(100.0)
             .show(ctx, |ui| {
@@ -98,8 +108,19 @@ impl epi::App for App {
             egui::ScrollArea::vertical()
                 .auto_shrink([false; 2])
                 .show(ui, |ui| {
-                    for song in &self.songs {
-                        ui.label(song);
+                    for song_title in &self.songs_titles {
+                        let button = Button::new(song_title).frame(false);
+                        let r = ui.add(button);
+
+                        // Not sure how to check which button is pressed.
+                        self.song_buttons.push(r.clone());
+                        self.song_ids.insert(r.id, song_title.clone());
+                    }
+
+                    for button in &self.song_buttons {
+                        if button.clicked() {
+                            // button.id
+                        }
                     }
                 });
         });
