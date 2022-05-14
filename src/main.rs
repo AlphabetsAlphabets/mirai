@@ -51,6 +51,8 @@ impl epi::App for App {
                         frame.quit()
                     }
                 });
+
+                // hi
                 ui.menu_button("Search", |ui| {
                     let scan_btn = ui.button("Scan for songs");
                     if scan_btn.clicked() {
