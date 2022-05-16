@@ -5,7 +5,7 @@ use std::process::Command;
 
 struct App {
     songs_titles: Vec<String>,
-    song_buttons: Vec<Response>,
+    responses: Vec<Response>,
     song_ids: HashMap<Id, String>,
 }
 
@@ -16,7 +16,7 @@ impl Default for App {
         let song_ids: HashMap<_, _> = HashMap::default();
         App {
             songs_titles,
-            song_buttons: responses,
+            responses,
             song_ids,
         }
     }
@@ -112,15 +112,8 @@ impl epi::App for App {
                         let button = Button::new(song_title).frame(false);
                         let r = ui.add(button);
 
-                        // Not sure how to check which button is pressed.
-                        self.song_buttons.push(r.clone());
-                        self.song_ids.insert(r.id, song_title.clone());
-                    }
-
-                    for button in &self.song_buttons {
-                        if button.clicked() {
-                            // button.id
-                        }
+                        self.song_ids.entry(r.id).or_insert(song_title.clone());
+                        self.responses.push(r);
                     }
                 });
         });
